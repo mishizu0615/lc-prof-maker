@@ -208,15 +208,15 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
   const STAR = new Path2D('M35 4 C37 26 44 33 66 35 C44 37 37 44 35 66 C33 44 26 37 4 35 C26 33 33 26 35 4Z');
   function star(cx, cy, size, color){ ctx.save(); ctx.translate(cx - size/2, cy - size/2); ctx.scale(size/70, size/70); ctx.fillStyle = color; ctx.fill(STAR); ctx.restore(); }
   const CHEKI = {
-    pink:{card0:'#F8E8EC', card1:'#EFD6DC'},
-    blue:{card0:'#EAF2F7', card1:'#DAE7EF'}
+    pink:{card0:'#F8E8EC', card1:'#EFD6DC', tape:'#F4AFC0', accent:'#C95576', pill:'#E2738F', ink:'#3F2A33', spark:'#F4AFC0', mark:'#E2738F', edge:'rgba(201,85,118,.35)'},
+    blue:{card0:'#EAF2F7', card1:'#DAE7EF', tape:'#A7CCE0', accent:'#3F7898', pill:'#6A9DBB', ink:'#2B3D4A', spark:'#A7CCE0', mark:'#6A9DBB', edge:'rgba(63,120,152,.35)'}
   };
   let chekiVar = 'pink';
   try { const c = localStorage.getItem('lc-cheki'); if (CHEKI[c]) chekiVar = c; } catch(e){}
   const CK = () => CHEKI[chekiVar];
   function tape(cx, cy, ang){
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(ang * Math.PI/180); ctx.globalAlpha = .88;
-    ctx.fillStyle = '#F4AFC0'; ctx.fillRect(-95, -25, 190, 50);
+    ctx.fillStyle = CK().tape; ctx.fillRect(-95, -25, 190, 50);
     ctx.fillStyle = 'rgba(255,255,255,.45)'; for (let x = -95 + 12; x < 95; x += 20) ctx.fillRect(x, -25, 8, 50);
     ctx.restore();
   }
@@ -268,11 +268,12 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
   FRAMES.cheki = {
     photo:{x:45, y:45, w:810, h:860, r:10},
     raw:true,
-    palette:{rose:{fill:'#E2738F', stroke:null, color:'#FFFFFF'}},
+    palette:{get rose(){ return {fill:CK().pill, stroke:null, color:'#FFFFFF'}; }},
     tag:{size:29, min:20, font:s=>`700 ${s}px "Zen Maru Gothic", sans-serif`, ls:.06, left:58, top:938, padX:26, padY:8, h:54, border:0, gap:10, pill:true},
-    name:{size:108, lh:124, min:70, font:s=>`900 ${s}px "Zen Maru Gothic", sans-serif`, ls:.02, left:54, top:1000, right:640, color:'#3F2A33', shadow:null},
-    age:{numFont:'700 62px "Zen Maru Gothic", sans-serif', numColor:'#C95576', unitFont:'700 32px "Zen Maru Gothic", sans-serif', unitColor:'#C95576', gap:16, unitGap:3, shadow:null},
+    name:{size:108, lh:124, min:70, font:s=>`900 ${s}px "Zen Maru Gothic", sans-serif`, ls:.02, left:54, top:1000, get right(){ return FRAMES.cheki.logoLeft - 24; }, get color(){ return CK().ink; }, shadow:null},
+    age:{numFont:'700 62px "Zen Maru Gothic", sans-serif', get numColor(){ return CK().accent; }, unitFont:'700 32px "Zen Maru Gothic", sans-serif', get unitColor(){ return CK().accent; }, gap:16, unitGap:3, shadow:null},
     right:850,
+    logoLeft:560,
     card(){
       const C = CK(); const g = ctx.createLinearGradient(0,0,W*.17,H);
       g.addColorStop(0, C.card0); g.addColorStop(1, C.card1);
@@ -281,23 +282,24 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
       ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
     },
     decor(){
-      const P = this.photo;
+      const P = this.photo, C = CK();
       // window edge + soft inner shadow
       ctx.save(); rrect(P.x, P.y, P.w, P.h, P.r); ctx.clip();
       ctx.shadowColor = 'rgba(63,42,51,.10)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 6;
       ctx.lineWidth = 40; ctx.strokeStyle = '#000'; rrect(P.x-20, P.y-20, P.w+40, P.h+40, P.r+20); ctx.stroke();
       ctx.restore();
-      ctx.save(); rrect(P.x+.75, P.y+.75, P.w-1.5, P.h-1.5, P.r); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(201,85,118,.35)'; ctx.stroke(); ctx.restore();
+      ctx.save(); rrect(P.x+.75, P.y+.75, P.w-1.5, P.h-1.5, P.r); ctx.lineWidth = 1.5; ctx.strokeStyle = C.edge; ctx.stroke(); ctx.restore();
       tape(83, 63, -38); tape(817, 63, 38);
       star(808, 886, 56, 'rgba(255,255,255,.95)'); star(842, 852, 24, 'rgba(255,255,255,.9)');
       // doodles (upper right of the margin)
-      star(792, 962, 64, '#F4AFC0'); star(838, 1004, 30, '#E2738F');
-      ctx.save(); ctx.translate(752, 1012); ctx.scale(1, 1); ctx.lineWidth = 3.2; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = '#E2738F'; ctx.stroke(HEART); ctx.restore();
-      // logo (lower right)
-      ctx.save(); ctx.translate(852, 1152); ctx.rotate(-4 * Math.PI/180);
-      ctx.font = '400 60px "Great Vibes", cursive'; ctx.fillStyle = '#C95576';
-      const lw = ctx.measureText('Love Collection').width; ctx.fillText('Love Collection', -lw, 0);
-      ctx.restore();
+      star(792, 962, 64, C.spark); star(838, 1004, 30, C.mark);
+      ctx.save(); ctx.translate(752, 1012); ctx.lineWidth = 3.2; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = C.mark; ctx.stroke(HEART); ctx.restore();
+      // logo: bottom right, level with the name baseline
+      const N = this.name, base = baseline(N.top, N.lh, vm(N.font(N.size), N.size));
+      ctx.font = '400 58px "Great Vibes", cursive'; ctx.fillStyle = C.accent;
+      const lw = ctx.measureText('Love Collection').width;
+      this.logoLeft = 850 - lw;
+      ctx.fillText('Love Collection', this.logoLeft, base);
     }
   };
   let frameId = 'magazine';
