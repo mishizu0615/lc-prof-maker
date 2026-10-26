@@ -208,18 +208,19 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
   const STAR = new Path2D('M35 4 C37 26 44 33 66 35 C44 37 37 44 35 66 C33 44 26 37 4 35 C26 33 33 26 35 4Z');
   function star(cx, cy, size, color){ ctx.save(); ctx.translate(cx - size/2, cy - size/2); ctx.scale(size/70, size/70); ctx.fillStyle = color; ctx.fill(STAR); ctx.restore(); }
   const CHEKI = {
-    pink:{card0:'#F1D9DE', card1:'#E6C3CA', edge:'rgba(150,60,85,.35)', accent:'#B04F6B', ink:'#4A2B36', tape:'rgba(255,255,255,.72)', stripe:'rgba(214,120,145,.45)', spark:'#D98AA0'},
-    blue:{card0:'#DCEAF2', card1:'#C9DDE8', edge:'rgba(60,100,125,.35)', accent:'#4C7891', ink:'#2C3E4B', tape:'rgba(255,255,255,.72)', stripe:'rgba(232,150,172,.5)', spark:'#E39AB0'}
+    pink:{card0:'#F8E8EC', card1:'#EFD6DC'},
+    blue:{card0:'#EAF2F7', card1:'#DAE7EF'}
   };
   let chekiVar = 'pink';
   try { const c = localStorage.getItem('lc-cheki'); if (CHEKI[c]) chekiVar = c; } catch(e){}
   const CK = () => CHEKI[chekiVar];
   function tape(cx, cy, ang){
-    const C = CK(); ctx.save(); ctx.translate(cx, cy); ctx.rotate(ang * Math.PI/180);
-    ctx.fillStyle = C.tape; ctx.fillRect(-95, -25, 190, 50);
-    ctx.fillStyle = C.stripe; for (let x = -95 + 6; x < 95; x += 20) ctx.fillRect(x, -25, 8, 50);
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(ang * Math.PI/180); ctx.globalAlpha = .88;
+    ctx.fillStyle = '#F4AFC0'; ctx.fillRect(-95, -25, 190, 50);
+    ctx.fillStyle = 'rgba(255,255,255,.45)'; for (let x = -95 + 12; x < 95; x += 20) ctx.fillRect(x, -25, 8, 50);
     ctx.restore();
   }
+  const HEART = new Path2D('M24 40 C10 30 4 22 5 14 C6 6 15 3 21 9 C23 11 24 13 24 13 C25 10 28 5 34 5 C42 5 45 12 43 19 C41 27 32 34 24 40Z');
   const FRAMES = {
     magazine:{
       tag:{size:34, min:24, font:s=>`700 ${s}px "Shippori Mincho", serif`, ls:.1, left:52, top:852, padX:22, padY:9, border:1.5, gap:12},
@@ -265,35 +266,48 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
     }
   };
   FRAMES.cheki = {
-    photo:{x:45, y:45, w:810, h:820, r:10},
-    tag:{size:28, min:20, font:s=>`700 ${s}px "Zen Maru Gothic", sans-serif`, ls:.06, left:56, top:890, padX:18, padY:6, border:1.5, gap:10, pill:true},
-    name:{size:104, lh:114, min:68, font:s=>`900 ${s}px "Zen Maru Gothic", sans-serif`, ls:.02, left:52, top:952, get color(){ return CK().ink; }, shadow:null},
-    age:{numFont:'700 64px "Zen Maru Gothic", sans-serif', get numColor(){ return CK().accent; }, unitFont:'700 30px "Zen Maru Gothic", sans-serif', get unitColor(){ return CK().accent; }, gap:14, unitGap:4, shadow:null},
+    photo:{x:45, y:45, w:810, h:860, r:10},
+    raw:true,
+    palette:{rose:{fill:'#E2738F', stroke:null, color:'#FFFFFF'}},
+    tag:{size:29, min:20, font:s=>`700 ${s}px "Zen Maru Gothic", sans-serif`, ls:.06, left:58, top:938, padX:26, padY:8, h:54, border:0, gap:10, pill:true},
+    name:{size:108, lh:124, min:70, font:s=>`900 ${s}px "Zen Maru Gothic", sans-serif`, ls:.02, left:54, top:1000, right:640, color:'#3F2A33', shadow:null},
+    age:{numFont:'700 42px "Zen Maru Gothic", sans-serif', numColor:'#C95576', unitFont:'700 42px "Zen Maru Gothic", sans-serif', unitColor:'#C95576', gap:22, unitGap:0, top:940, lh:54, shadow:null},
+    ageWithTags:true,
     right:850,
     card(){
-      const C = CK(); const g = ctx.createLinearGradient(0,0,0,H);
+      const C = CK(); const g = ctx.createLinearGradient(0,0,W*.17,H);
       g.addColorStop(0, C.card0); g.addColorStop(1, C.card1);
       ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
-      ctx.globalAlpha = .12; ctx.globalCompositeOperation = 'overlay'; ctx.drawImage(noise, 0, 0);
+      ctx.globalAlpha = .10; ctx.globalCompositeOperation = 'overlay'; ctx.drawImage(noise, 0, 0);
       ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
     },
     decor(){
-      const C = CK(), P = this.photo;
-      ctx.save(); rrect(P.x, P.y, P.w, P.h, P.r); ctx.lineWidth = 1.5; ctx.strokeStyle = C.edge; ctx.stroke(); ctx.restore();
-      tape(83, 63, -38); tape(817, 63, 38);
-      star(806, 818, 56, 'rgba(255,255,255,.95)'); star(842, 790, 24, 'rgba(255,255,255,.9)');
-      // logo
-      ctx.save(); ctx.translate(850, 1150); ctx.rotate(-5 * Math.PI/180);
-      ctx.font = '400 66px "Great Vibes", cursive'; ctx.fillStyle = C.accent;
-      const lw = ctx.measureText('Love Collection').width; ctx.fillText('Love Collection', -lw, 0);
+      const P = this.photo;
+      // window edge + soft inner shadow
+      ctx.save(); rrect(P.x, P.y, P.w, P.h, P.r); ctx.clip();
+      ctx.shadowColor = 'rgba(63,42,51,.10)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 6;
+      ctx.lineWidth = 40; ctx.strokeStyle = '#000'; rrect(P.x-20, P.y-20, P.w+40, P.h+40, P.r+20); ctx.stroke();
       ctx.restore();
-      star(808, 1050, 40, C.spark); star(842, 1076, 18, C.accent);
+      ctx.save(); rrect(P.x+.75, P.y+.75, P.w-1.5, P.h-1.5, P.r); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(201,85,118,.35)'; ctx.stroke(); ctx.restore();
+      tape(83, 63, -38); tape(817, 63, 38);
+      star(808, 886, 56, 'rgba(255,255,255,.95)'); star(842, 852, 24, 'rgba(255,255,255,.9)');
+      // doodles (upper right of the margin)
+      star(792, 962, 64, '#F4AFC0'); star(838, 1004, 30, '#E2738F');
+      ctx.save(); ctx.translate(752, 1012); ctx.scale(1, 1); ctx.lineWidth = 3.2; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = '#E2738F'; ctx.stroke(HEART); ctx.restore();
+      // logo (lower right)
+      ctx.save(); ctx.translate(850, 1124); ctx.rotate(-6 * Math.PI/180);
+      ctx.font = '400 66px "Great Vibes", cursive'; ctx.fillStyle = '#C95576';
+      const lw = ctx.measureText('Love Collection').width; ctx.fillText('Love Collection', -lw, 0);
+      ctx.font = '600 15px "Montserrat", sans-serif'; ctx.fillStyle = '#E2738F';
+      const ls = 15*.42, pw = spacedW('PREMIUM GIRLS', ls) - ls; drawSpaced('PREMIUM GIRLS', -pw - 4, 30, ls);
+      ctx.restore();
     }
   };
   let frameId = 'magazine';
   try { const f = localStorage.getItem('lc-frame'); if (FRAMES[f]) frameId = f; } catch(e){}
 
   let src = null;           // graded source canvas
+  let srcRaw = null;        // same photo without the retro grade (cheki frame)
   let view = {zoom:1, cx:.5, cy:.5};
   let noise = null;
 
@@ -319,6 +333,7 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
     const w = Math.round(img.naturalWidth * r), h = Math.round(img.naturalHeight * r);
     const c = document.createElement('canvas'); c.width = w; c.height = h;
     const x = c.getContext('2d'); x.drawImage(img, 0, 0, w, h);
+    srcRaw = document.createElement('canvas'); srcRaw.width = w; srcRaw.height = h; srcRaw.getContext('2d').drawImage(c, 0, 0);
     const d = x.getImageData(0, 0, w, h), p = d.data;
     const a = .14, s = .95, k = .94, b = 1.03, f = .10, t = [255/255, 236/255, 214/255];
     for (let i = 0; i < p.length; i += 4){
@@ -379,7 +394,7 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
     if (F.photo){ rrect(R.x, R.y, R.w, R.h, R.r); ctx.clip(); }
     if (src){
       const g = geom();
-      ctx.drawImage(src, g.dx, g.dy, g.dw, g.dh);
+      ctx.drawImage(F.raw ? srcRaw : src, g.dx, g.dy, g.dw, g.dh);
     } else {
       const bg = ctx.createLinearGradient(0,R.y,0,R.y+R.h);
       bg.addColorStop(0,'#7B5A66'); bg.addColorStop(1,'#2B1C22');
@@ -389,10 +404,12 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
       ctx.fillText('ここに写真が入ります', R.x + R.w/2, R.y + R.h*.46);
       ctx.textAlign = 'left';
     }
-    // film grain
-    ctx.globalAlpha = .28; ctx.globalCompositeOperation = 'overlay';
-    ctx.drawImage(noise, 0, 0);
-    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    // film grain (not on the cheki frame, which keeps the photo's own color)
+    if (!F.raw){
+      ctx.globalAlpha = .28; ctx.globalCompositeOperation = 'overlay';
+      ctx.drawImage(noise, 0, 0);
+      ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    }
     ctx.restore();
     F.decor();
     let m;
@@ -401,32 +418,35 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
     const T = F.tag;
     const tags = [];
     const occ = occEl.value.trim();
-    if (occ) tags.push({text:occ, ...pal(tagColor.occ)});
-    if ($('tagLocal').checked) tags.push({text:'地元', ...pal(tagColor.local)});
-    if ($('tagNew').checked) tags.push({text:'未経験', ...pal(tagColor.new)});
+    const P = id => (F.palette && F.palette[id]) || pal(id);
+    if (occ) tags.push({text:occ, ...P(tagColor.occ)});
+    if ($('tagLocal').checked) tags.push({text:'地元', ...P(tagColor.local)});
+    if ($('tagNew').checked) tags.push({text:'未経験', ...P(tagColor.new)});
+    let tagsEnd = T.left;
     if (tags.length){
       // shrink the whole row if it would run past the right edge
       let ts = T.size;
       const rowW = s => { ctx.font = T.font(s); return tags.reduce((w,tg) => w + spacedW(tg.text, s*T.ls) + T.padX*2 + T.border*2, 0) + T.gap*(tags.length-1); };
-      const avail = F.right - T.left;
+      const avail = F.right - T.left - (F.ageWithTags && ageEl.value ? 150 : 0);
       const w0 = rowW(ts); if (w0 > avail) ts = Math.max(T.min, Math.floor(ts * avail / w0));
       const font = T.font(ts); m = vm(font, ts);
       ctx.font = font; const ls = ts*T.ls;
-      const bh = (m.asc + m.desc) + T.padY*2 + T.border*2;
-      const top = T.top + (vm(T.font(T.size), T.size).asc + vm(T.font(T.size), T.size).desc - (m.asc + m.desc)); // keep bottom edge fixed
+      const bh = T.h ? T.h * ts / T.size : (m.asc + m.desc) + T.padY*2 + T.border*2;
+      const top = T.h ? T.top + T.h - bh : T.top + (vm(T.font(T.size), T.size).asc + vm(T.font(T.size), T.size).desc - (m.asc + m.desc)); // keep bottom edge fixed
       ctx.font = font;
       let x = T.left; shadow(null);
       for (const tg of tags){
         const bw = spacedW(tg.text, ls) + T.padX*2 + T.border*2;
         rrect(x, top, bw, bh, T.pill ? bh/2 : 0); ctx.fillStyle = tg.fill; ctx.fill();
-        if (tg.stroke){
+        if (tg.stroke && T.border){
           ctx.lineWidth = T.border; ctx.strokeStyle = tg.stroke;
           rrect(x + T.border/2, top + T.border/2, bw - T.border, bh - T.border, T.pill ? (bh - T.border)/2 : 0); ctx.stroke();
         }
         ctx.fillStyle = tg.color;
-        drawSpaced(tg.text, x + T.border + T.padX, top + T.border + T.padY + m.asc, ls);
+        drawSpaced(tg.text, x + T.border + T.padX, top + (bh - (m.asc + m.desc))/2 + m.asc, ls);
         x += bw + T.gap;
       }
+      tagsEnd = x - T.gap;
     }
 
     // name + age on one baseline
@@ -443,16 +463,18 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
     if (name){
       ctx.font = N.font(size);
       let nw = spacedW(name, size*N.ls);
-      const room = F.right - N.left - (age ? A.gap + ageW : 0);
+      const room = (N.right || F.right) - N.left - (age && !F.ageWithTags ? A.gap + ageW : 0);
       if (nw > room){ size = Math.max(N.min, Math.floor(size * room / nw)); ctx.font = N.font(size); nw = spacedW(name, size*N.ls); }
       ctx.fillStyle = N.color; shadow(N.shadow);
       drawSpaced(name, N.left, base, size*N.ls);
       var ageX = N.left + nw + A.gap;
     } else { var ageX = N.left; }
+    let ageBase = base;
+    if (F.ageWithTags){ ageX = tags.length ? tagsEnd + A.gap : T.left; ageBase = baseline(A.top, A.lh, vm(A.numFont, 42)); }
     if (age){
       shadow(A.shadow);
-      ctx.font = A.numFont; ctx.fillStyle = A.numColor; ctx.fillText(age, ageX, base);
-      ctx.font = A.unitFont; ctx.fillStyle = A.unitColor; ctx.fillText('歳', ageX + numW + A.unitGap, base);
+      ctx.font = A.numFont; ctx.fillStyle = A.numColor; ctx.fillText(age, ageX, ageBase);
+      ctx.font = A.unitFont; ctx.fillStyle = A.unitColor; ctx.fillText('歳', ageX + numW + A.unitGap, ageBase);
     }
     shadow(null);
     ctx.restore();
