@@ -271,8 +271,7 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
     palette:{rose:{fill:'#E2738F', stroke:null, color:'#FFFFFF'}},
     tag:{size:29, min:20, font:s=>`700 ${s}px "Zen Maru Gothic", sans-serif`, ls:.06, left:58, top:938, padX:26, padY:8, h:54, border:0, gap:10, pill:true},
     name:{size:108, lh:124, min:70, font:s=>`900 ${s}px "Zen Maru Gothic", sans-serif`, ls:.02, left:54, top:1000, right:640, color:'#3F2A33', shadow:null},
-    age:{numFont:'700 42px "Zen Maru Gothic", sans-serif', numColor:'#C95576', unitFont:'700 42px "Zen Maru Gothic", sans-serif', unitColor:'#C95576', gap:22, unitGap:0, top:940, lh:54, shadow:null},
-    ageWithTags:true,
+    age:{numFont:'700 62px "Zen Maru Gothic", sans-serif', numColor:'#C95576', unitFont:'700 32px "Zen Maru Gothic", sans-serif', unitColor:'#C95576', gap:16, unitGap:3, shadow:null},
     right:850,
     card(){
       const C = CK(); const g = ctx.createLinearGradient(0,0,W*.17,H);
@@ -295,11 +294,9 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
       star(792, 962, 64, '#F4AFC0'); star(838, 1004, 30, '#E2738F');
       ctx.save(); ctx.translate(752, 1012); ctx.scale(1, 1); ctx.lineWidth = 3.2; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = '#E2738F'; ctx.stroke(HEART); ctx.restore();
       // logo (lower right)
-      ctx.save(); ctx.translate(850, 1124); ctx.rotate(-6 * Math.PI/180);
-      ctx.font = '400 66px "Great Vibes", cursive'; ctx.fillStyle = '#C95576';
+      ctx.save(); ctx.translate(852, 1152); ctx.rotate(-4 * Math.PI/180);
+      ctx.font = '400 60px "Great Vibes", cursive'; ctx.fillStyle = '#C95576';
       const lw = ctx.measureText('Love Collection').width; ctx.fillText('Love Collection', -lw, 0);
-      ctx.font = '600 15px "Montserrat", sans-serif'; ctx.fillStyle = '#E2738F';
-      const ls = 15*.42, pw = spacedW('PREMIUM GIRLS', ls) - ls; drawSpaced('PREMIUM GIRLS', -pw - 4, 30, ls);
       ctx.restore();
     }
   };
@@ -497,7 +494,7 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
         document.fonts.load('italic 500 74px "Cormorant Garamond"', '0123456789'),
         document.fonts.load('600 17px "Montserrat"', 'LOVE COLLECTIONPROFILE'),
         document.fonts.load('900 104px "Zen Maru Gothic"', t),
-        document.fonts.load('700 64px "Zen Maru Gothic"', t),
+        document.fonts.load('700 62px "Zen Maru Gothic"', t),
         document.fonts.load('400 66px "Great Vibes"', 'Love Collection')
       ]);
     } catch(e){}
