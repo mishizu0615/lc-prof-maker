@@ -243,11 +243,11 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
     }
   };
   FRAMES.cheki = {
-    photo:{x:24, y:24, w:852, h:881, r:8},
+    photo:{x:24, y:24, w:852, h:911, r:8},
     raw:true,
     palette:{get rose(){ return {fill:CK().pill, stroke:null, color:'#FFFFFF'}; }},
-    tag:{size:29, min:20, font:s=>`700 ${s}px "Zen Maru Gothic", sans-serif`, ls:.06, left:58, top:938, padX:26, padY:8, h:54, border:0, gap:10, pill:true},
-    name:{size:108, lh:124, min:70, font:s=>`900 ${s}px "Zen Maru Gothic", sans-serif`, ls:.02, left:54, top:1000, get right(){ return FRAMES.cheki.logoLeft - 24; }, get color(){ return CK().ink; }, shadow:null},
+    tag:{size:29, min:20, font:s=>`700 ${s}px "Zen Maru Gothic", sans-serif`, ls:.06, left:58, top:968, padX:26, padY:8, h:54, border:0, gap:10, pill:true},
+    name:{size:108, lh:124, min:70, font:s=>`900 ${s}px "Zen Maru Gothic", sans-serif`, ls:.02, left:54, top:1030, get right(){ return FRAMES.cheki.logoLeft - 24; }, get color(){ return CK().ink; }, shadow:null},
     age:{numFont:'700 62px "Zen Maru Gothic", sans-serif', get numColor(){ return CK().accent; }, unitFont:'700 32px "Zen Maru Gothic", sans-serif', get unitColor(){ return CK().accent; }, gap:16, unitGap:3, shadow:null},
     right:850,
     logoLeft:560,
@@ -267,10 +267,10 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
       ctx.restore();
       ctx.save(); rrect(P.x+.75, P.y+.75, P.w-1.5, P.h-1.5, P.r); ctx.lineWidth = 1.5; ctx.strokeStyle = C.edge; ctx.stroke(); ctx.restore();
       tape(64, 44, -38); tape(836, 44, 38);
-      star(829, 870, 56, 'rgba(255,255,255,.95)'); star(863, 836, 24, 'rgba(255,255,255,.9)');
+      star(829, 900, 56, 'rgba(255,255,255,.95)'); star(863, 866, 24, 'rgba(255,255,255,.9)');
       // doodles (upper right of the margin)
-      star(792, 962, 64, C.spark); star(838, 1004, 30, C.mark);
-      ctx.save(); ctx.translate(752, 1012); ctx.lineWidth = 3.2; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = C.mark; ctx.stroke(HEART); ctx.restore();
+      star(792, 992, 64, C.spark); star(838, 1034, 30, C.mark);
+      ctx.save(); ctx.translate(752, 1042); ctx.lineWidth = 3.2; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = C.mark; ctx.stroke(HEART); ctx.restore();
       // logo: bottom right, level with the name baseline
       const N = this.name, base = baseline(N.top, N.lh, vm(N.font(N.size), N.size));
       ctx.font = '400 58px "Great Vibes", cursive'; ctx.fillStyle = C.accent;
