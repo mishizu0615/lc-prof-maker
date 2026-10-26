@@ -75,6 +75,12 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
 .chip input:checked+span{border-color:var(--rose);color:var(--rose);background:var(--rose-soft)}
 .chip input:checked+span::before{content:"✓ "}
 .chip input:focus-visible+span{outline:2px solid var(--rose);outline-offset:2px}
+.swrow{display:grid;grid-template-columns:44px minmax(0,1fr);align-items:center;gap:8px}
+.swname{font-size:13px;color:var(--muted);font-weight:700}
+.sws{display:flex;flex-wrap:wrap;gap:5px}
+.sw{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);cursor:pointer;padding:0;display:grid;place-items:center;font:700 13px var(--f-display)}
+.sw[aria-checked="true"]{outline:2.5px solid var(--ink);outline-offset:2px}
+.sw:focus-visible{outline:2.5px solid var(--rose);outline-offset:2px}
 
 .out{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;gap:14px;grid-template-columns:minmax(0,220px) minmax(0,1fr);align-items:start}
 @media (max-width:560px){.out{grid-template-columns:minmax(0,1fr)}}
@@ -122,6 +128,13 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
         </div>
         <small>チェックしたタグが職業の右に並びます。</small>
       </div>
+      <div class="field">
+        <span class="lbl">タグの色</span>
+        <div class="swrow"><span class="swname">職業</span><div class="sws" data-tag="occ" role="radiogroup" aria-label="職業タグの色"></div></div>
+        <div class="swrow"><span class="swname">地元</span><div class="sws" data-tag="local" role="radiogroup" aria-label="地元タグの色"></div></div>
+        <div class="swrow"><span class="swname">未経験</span><div class="sws" data-tag="new" role="radiogroup" aria-label="未経験タグの色"></div></div>
+        <small id="swHint">選んだ色はこの端末で次回も引き継がれます。</small>
+      </div>
       <div class="row">
         <div class="field">
           <label for="name">名前</label>
@@ -160,8 +173,7 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
   // ---- design spec (900×1200) ----
   const SPEC = {
     mast:{text:'LOVE COLLECTION', font:'700 80px "Playfair Display", Georgia, serif', top:44, lh:80, color:'#FFFFFF', shadow:['rgba(0,0,0,.18)',14,2]},
-    tag:{size:26, font:s=>`700 ${s}px "Shippori Mincho", serif`, ls:.12, left:52, top:880, padX:20, padY:8, border:1.5, gap:10, fill:'rgba(170,40,60,.55)', stroke:'#E8A0A8', color:'#FFFFFF'},
-    sub:{fill:'#FFF1F4', stroke:'#FFF1F4', color:'#A8273B'},
+    tag:{size:34, min:24, font:s=>`700 ${s}px "Shippori Mincho", serif`, ls:.1, left:52, top:852, padX:22, padY:9, border:1.5, gap:12},
     name:{size:150, min:92, font:s=>`700 ${s}px "Shippori Mincho", serif`, ls:.06, left:46, top:952, color:'#FFFFFF', shadow:['rgba(0,0,0,.3)',18,3]},
     age:{numFont:'italic 400 84px "Playfair Display", Georgia, serif', numColor:'#F6B3C6', unitFont:'600 40px "Shippori Mincho", serif', unitColor:'#FFFFFF', gap:18, unitGap:6, shadow:['rgba(0,0,0,.3)',12,2]},
     right:860
@@ -170,6 +182,22 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
   let src = null;           // graded source canvas
   let view = {zoom:1, cx:.5, cy:.5};
   let noise = null;
+
+  // ---- tag colors (dusty palette; dark ink on light fills for legibility) ----
+  const PALETTE = [
+    {id:'rose',   name:'ローズ（透け）', fill:'rgba(170,40,60,.55)', stroke:'#E8A0A8', color:'#FFFFFF'},
+    {id:'white',  name:'ホワイト',       fill:'#FFF1F4', color:'#A8273B'},
+    {id:'pink',   name:'くすみピンク',   fill:'#E8B7BF', color:'#5A2330'},
+    {id:'blue',   name:'くすみ水色',     fill:'#AFC6D3', color:'#1F3A4A'},
+    {id:'green',  name:'くすみグリーン', fill:'#B7C8AA', color:'#2C3D23'},
+    {id:'yellow', name:'くすみイエロー', fill:'#E7D5A4', color:'#4A3913'},
+    {id:'lav',    name:'くすみラベンダー', fill:'#C5B7D4', color:'#392A4B'},
+    {id:'beige',  name:'グレージュ',     fill:'#D6CABD', color:'#3D3128'}
+  ];
+  const pal = id => { const p = PALETTE.find(x => x.id === id) || PALETTE[0]; return {fill:p.fill, stroke:p.stroke || null, color:p.color}; };
+  const DEFAULT_COLORS = {occ:'rose', local:'white', new:'white'};
+  let tagColor = {...DEFAULT_COLORS};
+  try { const saved = JSON.parse(localStorage.getItem('lc-tag-colors') || 'null'); if (saved) tagColor = {...DEFAULT_COLORS, ...saved}; } catch(e){}
 
   // ---- color grade: sepia .14 → saturate .95 → contrast .94 → brightness 1.03 → warm fade 10% ----
   function grade(img){
@@ -260,25 +288,34 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
     const mw = ctx.measureText(M.text).width;
     ctx.fillText(M.text, (W - mw)/2, baseline(M.top, M.lh, m));
 
-    // tags: occupation (filled) + 地元 / 未経験 (outlined), left to right
-    const T = SPEC.tag, S = SPEC.sub;
+    // tags: occupation + 地元 / 未経験, left to right, each in its chosen color
+    const T = SPEC.tag;
     const tags = [];
     const occ = occEl.value.trim();
-    if (occ) tags.push({text:occ, fill:T.fill, stroke:T.stroke, color:T.color});
-    if ($('tagLocal').checked) tags.push({text:'地元', fill:S.fill, stroke:S.stroke, color:S.color});
-    if ($('tagNew').checked) tags.push({text:'未経験', fill:S.fill, stroke:S.stroke, color:S.color});
+    if (occ) tags.push({text:occ, ...pal(tagColor.occ)});
+    if ($('tagLocal').checked) tags.push({text:'地元', ...pal(tagColor.local)});
+    if ($('tagNew').checked) tags.push({text:'未経験', ...pal(tagColor.new)});
     if (tags.length){
-      const font = T.font(T.size); m = vm(font, T.size);
-      ctx.font = font; const ls = T.size*T.ls;
+      // shrink the whole row if it would run past the right edge
+      let ts = T.size;
+      const rowW = s => { ctx.font = T.font(s); return tags.reduce((w,tg) => w + spacedW(tg.text, s*T.ls) + T.padX*2 + T.border*2, 0) + T.gap*(tags.length-1); };
+      const avail = SPEC.right - T.left;
+      const w0 = rowW(ts); if (w0 > avail) ts = Math.max(T.min, Math.floor(ts * avail / w0));
+      const font = T.font(ts); m = vm(font, ts);
+      ctx.font = font; const ls = ts*T.ls;
       const bh = (m.asc + m.desc) + T.padY*2 + T.border*2;
+      const top = T.top + (vm(T.font(T.size), T.size).asc + vm(T.font(T.size), T.size).desc - (m.asc + m.desc)); // keep bottom edge fixed
+      ctx.font = font;
       let x = T.left; shadow(null);
       for (const tg of tags){
         const bw = spacedW(tg.text, ls) + T.padX*2 + T.border*2;
-        ctx.fillStyle = tg.fill; ctx.fillRect(x, T.top, bw, bh);
-        ctx.lineWidth = T.border; ctx.strokeStyle = tg.stroke;
-        ctx.strokeRect(x + T.border/2, T.top + T.border/2, bw - T.border, bh - T.border);
+        ctx.fillStyle = tg.fill; ctx.fillRect(x, top, bw, bh);
+        if (tg.stroke){
+          ctx.lineWidth = T.border; ctx.strokeStyle = tg.stroke;
+          ctx.strokeRect(x + T.border/2, top + T.border/2, bw - T.border, bh - T.border);
+        }
         ctx.fillStyle = tg.color;
-        drawSpaced(tg.text, x + T.border + T.padX, T.top + T.border + T.padY + m.asc, ls);
+        drawSpaced(tg.text, x + T.border + T.padX, top + T.border + T.padY + m.asc, ls);
         x += bw + T.gap;
       }
     }
@@ -316,7 +353,7 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
   const redraw = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(draw); };
 
   async function fontsFor(text){
-    const t = text + 'LOVE COLLECTION0123456789歳ここに写真が入ります';
+    const t = text + 'LOVE COLLECTION0123456789歳地元未経験ここに写真が入ります';
     try {
       await Promise.all([
         document.fonts.load('700 80px "Playfair Display"', 'LOVE COLLECTION'),
@@ -331,7 +368,28 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
 
   // ---- inputs ----
   [occEl, nameEl, ageEl].forEach(el => el.addEventListener('input', refresh));
-  ['tagLocal','tagNew'].forEach(id => $(id).addEventListener('change', async () => { await document.fonts.load('700 26px "Shippori Mincho"', '地元未経験').catch(()=>{}); redraw(); }));
+  ['tagLocal','tagNew'].forEach(id => $(id).addEventListener('change', async () => { await document.fonts.load('700 34px "Shippori Mincho"', '地元未経験').catch(()=>{}); redraw(); }));
+
+  // swatch pickers
+  document.querySelectorAll('.sws').forEach(group => {
+    const key = group.dataset.tag;
+    PALETTE.forEach(p => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'sw'; b.setAttribute('role','radio');
+      b.setAttribute('aria-label', p.name); b.title = p.name;
+      b.style.background = p.fill; b.style.color = p.color;
+      if (p.stroke) b.style.borderColor = p.stroke;
+      b.textContent = 'あ';
+      b.setAttribute('aria-checked', String(tagColor[key] === p.id));
+      b.addEventListener('click', () => {
+        tagColor[key] = p.id;
+        group.querySelectorAll('.sw').forEach(s => s.setAttribute('aria-checked', String(s === b)));
+        try { localStorage.setItem('lc-tag-colors', JSON.stringify(tagColor)); } catch(e){}
+        redraw();
+      });
+      group.appendChild(b);
+    });
+  });
 
   function loadFile(file){
     if (!file || !file.type.startsWith('image/')) return;
