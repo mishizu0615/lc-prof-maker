@@ -123,8 +123,9 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
       <div class="field">
         <span class="lbl">枠の種類</span>
         <div class="frames list" role="radiogroup" aria-label="枠の種類">
-          <button type="button" class="fr" data-frame="magazine" role="radio"><b>雑誌表紙</b><span>ロゴ大きめ・明朝体</span></button>
-          <button type="button" class="fr" data-frame="cheki" role="radio"><b>チェキ風</b><span>フチ付き・丸ゴシック体</span></button>
+          <button type="button" class="fr" data-frame="magazine" role="radio"><b>① 雑誌</b><span>ロゴ大きめ・明朝体</span></button>
+          <button type="button" class="fr" data-frame="cheki" role="radio"><b>② チェキ</b><span>フチ付き・丸ゴシック体</span></button>
+          <button type="button" class="fr" data-frame="chekiPhoto" role="radio"><b>③ 枠だけ</b><span>名前・タグなし</span></button>
         </div>
       </div>
       <div class="field" id="chekiOpt" hidden>
@@ -139,12 +140,12 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
         <label class="pick" id="pickLbl"><input id="file" type="file" accept="image/*"><span id="pickTxt">写真を選ぶ</span></label>
         <small>枠なし・ぼかし済みの元写真を使ってください。</small>
       </div>
-      <div class="field">
+      <div class="field textOnly">
         <label for="occ">職業</label>
         <input id="occ" type="text" value="現役女子学生" maxlength="14">
         <small>空欄にするとタグを出しません。</small>
       </div>
-      <div class="field">
+      <div class="field textOnly">
         <span class="lbl">追加タグ</span>
         <div class="chips">
           <label class="chip"><input id="tagLocal" type="checkbox" checked><span>地元</span></label>
@@ -152,7 +153,7 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
         </div>
         <small>チェックしたタグが職業の右に並びます。</small>
       </div>
-      <div class="field">
+      <div class="field textOnly">
         <span class="lbl">タグの色</span>
         <div class="swrow"><span class="swname">職業</span><div class="sws" data-tag="occ" role="radiogroup" aria-label="職業タグの色"></div></div>
         <div class="swrow"><span class="swname">地元</span><div class="sws" data-tag="local" role="radiogroup" aria-label="地元タグの色"></div></div>
@@ -163,13 +164,14 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
         <div class="field">
           <label for="name">名前</label>
           <input id="name" type="text" value="ゆな" maxlength="10">
+          <small class="nameHint" hidden>③では画像に入りません。保存するファイル名に使います。</small>
         </div>
-        <div class="field">
+        <div class="field textOnly">
           <label for="age">年齢</label>
           <input id="age" type="number" inputmode="numeric" min="18" max="99" value="21">
         </div>
       </div>
-      <small style="color:var(--muted);font-size:12px;margin-top:-10px">名前が長いときは自動で文字が小さくなります。最初に入っている値は見本です。</small>
+      <small class="textOnly" style="color:var(--muted);font-size:12px;margin-top:-10px">名前が長いときは自動で文字が小さくなります。最初に入っている値は見本です。</small>
       <button class="primary" id="export" type="submit">画像を書き出す</button>
       <p class="note">写真はこの端末の中だけで処理され、どこにも送信されません。</p>
     </form>
@@ -277,6 +279,28 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
       const lw = ctx.measureText('Love Collection').width;
       this.logoLeft = 850 - lw;
       ctx.fillText('Love Collection', this.logoLeft, base);
+    }
+  };
+  FRAMES.chekiPhoto = {
+    photo:{x:24, y:24, w:852, h:1152, r:8},
+    raw:true, noText:true,
+    card(){ FRAMES.cheki.card(); },
+    decor(){
+      const P = this.photo, C = CK();
+      ctx.save(); rrect(P.x, P.y, P.w, P.h, P.r); ctx.clip();
+      ctx.shadowColor = 'rgba(63,42,51,.10)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 6;
+      ctx.lineWidth = 40; ctx.strokeStyle = '#000'; rrect(P.x-20, P.y-20, P.w+40, P.h+40, P.r+20); ctx.stroke();
+      // soft shade in the lower right so the white logo reads on any photo
+      const g = ctx.createRadialGradient(760, 1150, 20, 760, 1150, 330);
+      g.addColorStop(0, 'rgba(40,20,30,.32)'); g.addColorStop(1, 'rgba(40,20,30,0)');
+      ctx.shadowColor = 'transparent'; ctx.fillStyle = g; ctx.fillRect(P.x, P.y, P.w, P.h);
+      ctx.restore();
+      ctx.save(); rrect(P.x+.75, P.y+.75, P.w-1.5, P.h-1.5, P.r); ctx.lineWidth = 1.5; ctx.strokeStyle = C.edge; ctx.stroke(); ctx.restore();
+      tape(64, 44, -38); tape(836, 44, 38);
+      ctx.font = '400 66px "Great Vibes", cursive'; ctx.fillStyle = '#FFFFFF'; shadow(['rgba(0,0,0,.35)',10,2]);
+      const lw = ctx.measureText('Love Collection').width; ctx.fillText('Love Collection', 846 - lw, 1146);
+      shadow(null);
+      star(822, 1046, 44, 'rgba(255,255,255,.95)'); star(856, 1076, 20, 'rgba(255,255,255,.9)');
     }
   };
   let frameId = 'magazine';
@@ -390,6 +414,7 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
     F.decor();
     let m;
 
+    if (F.noText){ shadow(null); ctx.restore(); return; }
     // tags: occupation + 地元 / 未経験, left to right, each in its chosen color
     const T = F.tag;
     const tags = [];
@@ -484,7 +509,9 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
   const frBtns = document.querySelectorAll('.fr[data-frame]');
   const syncFrames = () => {
     frBtns.forEach(b => b.setAttribute('aria-checked', String(b.dataset.frame === frameId)));
-    $('chekiOpt').hidden = frameId !== 'cheki';
+    $('chekiOpt').hidden = !frameId.startsWith('cheki');
+    document.querySelectorAll('.textOnly').forEach(el => el.hidden = !!FRAMES[frameId].noText);
+    document.querySelectorAll('.nameHint').forEach(el => el.hidden = !FRAMES[frameId].noText);
     document.querySelectorAll('.cv').forEach(b => b.setAttribute('aria-checked', String(b.dataset.cheki === chekiVar)));
   };
   document.querySelectorAll('.cv').forEach(b => b.addEventListener('click', () => {
