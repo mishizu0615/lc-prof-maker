@@ -243,7 +243,7 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
     }
   };
   FRAMES.cheki = {
-    photo:{x:45, y:45, w:810, h:860, r:10},
+    photo:{x:24, y:24, w:852, h:881, r:8},
     raw:true,
     palette:{get rose(){ return {fill:CK().pill, stroke:null, color:'#FFFFFF'}; }},
     tag:{size:29, min:20, font:s=>`700 ${s}px "Zen Maru Gothic", sans-serif`, ls:.06, left:58, top:938, padX:26, padY:8, h:54, border:0, gap:10, pill:true},
@@ -266,8 +266,8 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
       ctx.lineWidth = 40; ctx.strokeStyle = '#000'; rrect(P.x-20, P.y-20, P.w+40, P.h+40, P.r+20); ctx.stroke();
       ctx.restore();
       ctx.save(); rrect(P.x+.75, P.y+.75, P.w-1.5, P.h-1.5, P.r); ctx.lineWidth = 1.5; ctx.strokeStyle = C.edge; ctx.stroke(); ctx.restore();
-      tape(83, 63, -38); tape(817, 63, 38);
-      star(808, 886, 56, 'rgba(255,255,255,.95)'); star(842, 852, 24, 'rgba(255,255,255,.9)');
+      tape(64, 44, -38); tape(836, 44, 38);
+      star(829, 870, 56, 'rgba(255,255,255,.95)'); star(863, 836, 24, 'rgba(255,255,255,.9)');
       // doodles (upper right of the margin)
       star(792, 962, 64, C.spark); star(838, 1004, 30, C.mark);
       ctx.save(); ctx.translate(752, 1012); ctx.lineWidth = 3.2; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = C.mark; ctx.stroke(HEART); ctx.restore();
