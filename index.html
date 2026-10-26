@@ -17,7 +17,7 @@
 <title>ラブコレ プロフ画像メーカー</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Shippori+Mincho:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Cormorant+Garamond:ital,wght@1,500&family=Montserrat:wght@600&family=Zen+Maru+Gothic:wght@700;900&family=Great+Vibes&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Shippori+Mincho:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Maru+Gothic:wght@700;900&family=Great+Vibes&display=swap">
 <style>
 /* Layout: two-pane workbench — live 3:4 cover preview on a dark stage, input sheet beside it; stacks on phones */
 :root{
@@ -124,7 +124,6 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
         <span class="lbl">枠の種類</span>
         <div class="frames list" role="radiogroup" aria-label="枠の種類">
           <button type="button" class="fr" data-frame="magazine" role="radio"><b>雑誌表紙</b><span>ロゴ大きめ・明朝体</span></button>
-          <button type="button" class="fr" data-frame="minimal" role="radio"><b>韓国ミニマル</b><span>細い線と余白・ゴシック体</span></button>
           <button type="button" class="fr" data-frame="cheki" role="radio"><b>チェキ風</b><span>フチ付き・丸ゴシック体</span></button>
         </div>
       </div>
@@ -239,28 +238,6 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
         ctx.font = font; ctx.fillStyle = '#FFFFFF'; shadow(['rgba(0,0,0,.18)',14,2]);
         const t = 'LOVE COLLECTION', mw = ctx.measureText(t).width;
         ctx.fillText(t, (W - mw)/2, baseline(44, 80, m));
-        shadow(null);
-      }
-    },
-    minimal:{
-      tag:{size:28, min:20, font:s=>`700 ${s}px "Zen Kaku Gothic New", sans-serif`, ls:.12, left:54, top:968, padX:18, padY:7, border:1.5, gap:10},
-      name:{size:92, lh:101, min:64, font:s=>`700 ${s}px "Zen Kaku Gothic New", sans-serif`, ls:.14, left:52, top:1048, color:'#FFFFFF', shadow:['rgba(0,0,0,.25)',12,2]},
-      age:{numFont:'italic 400 82px "Playfair Display", Georgia, serif', numColor:'#F6C6D3', unitFont:'500 32px "Zen Kaku Gothic New", sans-serif', unitColor:'#FFFFFF', gap:10, unitGap:4, shadow:['rgba(0,0,0,.25)',10,2]},
-      right:848,
-      decor(){
-        let gr = ctx.createLinearGradient(0,0,0,H*.3);
-        gr.addColorStop(0,'rgba(255,230,236,.10)'); gr.addColorStop(1,'rgba(255,230,236,0)');
-        ctx.fillStyle = gr; ctx.fillRect(0,0,W,H*.3);
-        gr = ctx.createLinearGradient(0,H*.62,0,H);
-        gr.addColorStop(0,'rgba(50,30,38,0)'); gr.addColorStop(1,'rgba(50,30,38,.6)');
-        ctx.fillStyle = gr; ctx.fillRect(0,H*.62,W,H*.38);
-        frameLines();
-        const font = '600 17px "Montserrat", sans-serif', ls = 17*.38, m = vm(font, 17);
-        ctx.font = font; ctx.fillStyle = '#FFFFFF'; shadow(['rgba(0,0,0,.15)',6,1]);
-        const y = baseline(50, 22, m);
-        drawSpaced('LOVE COLLECTION', 52, y, ls);
-        const pw = spacedW('PROFILE', ls) - ls;
-        drawSpaced('PROFILE', W - 52 - pw, y, ls);
         shadow(null);
       }
     }
@@ -491,10 +468,6 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
         document.fonts.load('700 150px "Shippori Mincho"', t),
         document.fonts.load('600 40px "Shippori Mincho"', '歳'),
         document.fonts.load('500 34px "Zen Kaku Gothic New"', 'ここに写真が入ります'),
-        document.fonts.load('700 92px "Zen Kaku Gothic New"', t),
-        document.fonts.load('500 26px "Zen Kaku Gothic New"', '歳'),
-        document.fonts.load('italic 500 74px "Cormorant Garamond"', '0123456789'),
-        document.fonts.load('600 17px "Montserrat"', 'LOVE COLLECTIONPROFILE'),
         document.fonts.load('900 104px "Zen Maru Gothic"', t),
         document.fonts.load('700 62px "Zen Maru Gothic"', t),
         document.fonts.load('400 66px "Great Vibes"', 'Love Collection')
