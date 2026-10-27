@@ -209,11 +209,6 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
       <div class="drive" id="driveBox" hidden>
         <button class="primary" id="driveSave" type="button">Driveに保存する</button>
         <p class="status" id="driveStatus" role="status"></p>
-        <details id="driveSet">
-          <summary>Drive保存の設定</summary>
-          <label for="gasUrl">保存先URL（この端末で最初に1回だけ入力）</label>
-          <input id="gasUrl" type="url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec">
-        </details>
       </div>
       <p class="status">「端末に保存する」で共有メニューが開いたら「画像を保存」を選んでください。画像の長押しでも保存できます。</p>
       <button class="primary" id="save" type="button">端末に保存する</button>
@@ -751,16 +746,13 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
 
   // ---- Drive保存（GitHub Pages版のみ。Apps Scriptのウェブアプリへ送る） ----
   let lastNm = '', driveDone = false;
-  const gasEl = $('gasUrl');
-  const GAS_KEY = 'lc-gas-url';
-  const getGas = () => { try { return localStorage.getItem(GAS_KEY) || ''; } catch(e){ return ''; } };
-  if (!window.claude){
+  // 保存先：Drive「新パネル202611」（1UgANDMDwZ897TsV2qgzfE7J7DyvKQ3M-）。
+  // ブラウザから直接Driveには書けないので、そのフォルダに書き込むApps ScriptのURLを全端末共通で埋め込む
+  const GAS_URL = '';
+  if (!window.claude && GAS_URL){
     $('driveBox').hidden = false;
     $('save').className = 'secondary';
     $('privacyNote').textContent = '写真はこの端末の中で処理されます。「Driveに保存する」を押したときだけ、書き出した画像がお店のGoogle Driveに送られます。';
-    gasEl.value = getGas();
-    if (!gasEl.value) $('driveSet').open = true;
-    gasEl.addEventListener('change', () => { try { localStorage.setItem(GAS_KEY, gasEl.value.trim()); } catch(e){} });
   }
   const toB64 = blob => new Promise((ok, ng) => {
     const r = new FileReader();
@@ -771,12 +763,7 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
   $('driveSave').addEventListener('click', async () => {
     const st = $('driveStatus'), btn = $('driveSave');
     if (!lastBlob) return;
-    const url = gasEl.value.trim() || getGas();
-    if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec/.test(url)){
-      st.className = 'status ng'; st.textContent = '保存先URLが未設定です。下の「Drive保存の設定」に貼ってください。';
-      $('driveSet').open = true; gasEl.focus(); return;
-    }
-    try { localStorage.setItem(GAS_KEY, url); } catch(e){}
+    const url = GAS_URL;
     if (driveDone && !confirm('この画像はもう保存済みです。もう1枚、別の番号で保存しますか？')) return;
     btn.disabled = true; st.className = 'status'; st.textContent = '保存しています…';
     try {
@@ -787,7 +774,7 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
       driveDone = true;
       st.className = 'status ok';
       st.textContent = `${j.created ? `「${j.folder}」フォルダを新しく作って、` : `「${j.folder}」フォルダに`}「${j.file}」で保存しました。`;
-      btn.textContent = '保存済み'; $('driveSet').open = false;
+      btn.textContent = '保存済み';
     } catch(err){
       st.className = 'status ng';
       st.textContent = `保存できませんでした（${err && err.message || '通信エラー'}）。電波を確認して、もう一度押してください。`;
