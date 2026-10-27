@@ -98,6 +98,12 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
 .out h2{font-family:var(--f-display);font-size:20px;margin:0}
 .out .acts{display:grid;gap:10px;align-content:start}
 .status{font-size:13px;color:var(--muted);margin:0;min-height:1.4em}
+.secondary{background:transparent;color:var(--ink);border:1.5px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+.drive{display:grid;gap:8px;border-bottom:1px solid var(--line);padding-bottom:14px}
+.drive details{font-size:13px;color:var(--muted)}
+.drive summary{cursor:pointer}
+.drive details input{width:100%;margin-top:6px;font:inherit;font-size:13px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);box-sizing:border-box}
+.status.ok{color:#2f7a3d}.status.ng{color:#b23a3a}
 @media (prefers-reduced-motion:no-preference){.primary,.ghost{transition:filter .15s}.primary:hover{filter:brightness(1.08)}}
 </style>
 
@@ -192,7 +198,7 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
       </div>
       <small class="textOnly" style="color:var(--muted);font-size:12px;margin-top:-10px">名前が長いときは自動で文字が小さくなります。最初に入っている値は見本です。</small>
       <button class="primary" id="export" type="submit">画像を書き出す</button>
-      <p class="note">写真はこの端末の中だけで処理され、どこにも送信されません。</p>
+      <p class="note" id="privacyNote">写真はこの端末の中だけで処理され、どこにも送信されません。</p>
     </form>
   </div>
 
@@ -200,6 +206,15 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
     <img id="outImg" alt="書き出した画像">
     <div class="acts">
       <h2 id="outTitle">書き出しました</h2>
+      <div class="drive" id="driveBox" hidden>
+        <button class="primary" id="driveSave" type="button">Driveに保存する</button>
+        <p class="status" id="driveStatus" role="status"></p>
+        <details id="driveSet">
+          <summary>Drive保存の設定</summary>
+          <label for="gasUrl">保存先URL（この端末で最初に1回だけ入力）</label>
+          <input id="gasUrl" type="url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec">
+        </details>
+      </div>
       <p class="status">「端末に保存する」で共有メニューが開いたら「画像を保存」を選んでください。画像の長押しでも保存できます。</p>
       <button class="primary" id="save" type="button">端末に保存する</button>
       <p class="status" id="saveStatus"></p>
@@ -703,6 +718,9 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
       img.src = URL.createObjectURL(blob);
       $('outTitle').textContent = src ? `${nm} の画像を書き出しました` : '見本の画像を書き出しました（写真が未選択です）';
       $('saveStatus').textContent = '';
+      lastNm = nm; driveDone = false;
+      $('driveStatus').textContent = ''; $('driveStatus').className = 'status';
+      $('driveSave').disabled = false; $('driveSave').textContent = `Driveの「${nm}」フォルダに保存する`;
       $('out').hidden = false;
       $('out').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block:'nearest'});
     }, 'image/jpeg', .92);
@@ -729,6 +747,51 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     st.textContent = '保存できない場合は、画像を長押しして保存してください。';
+  });
+
+  // ---- Drive保存（GitHub Pages版のみ。Apps Scriptのウェブアプリへ送る） ----
+  let lastNm = '', driveDone = false;
+  const gasEl = $('gasUrl');
+  const GAS_KEY = 'lc-gas-url';
+  const getGas = () => { try { return localStorage.getItem(GAS_KEY) || ''; } catch(e){ return ''; } };
+  if (!window.claude){
+    $('driveBox').hidden = false;
+    $('save').className = 'secondary';
+    $('privacyNote').textContent = '写真はこの端末の中で処理されます。「Driveに保存する」を押したときだけ、書き出した画像がお店のGoogle Driveに送られます。';
+    gasEl.value = getGas();
+    if (!gasEl.value) $('driveSet').open = true;
+    gasEl.addEventListener('change', () => { try { localStorage.setItem(GAS_KEY, gasEl.value.trim()); } catch(e){} });
+  }
+  const toB64 = blob => new Promise((ok, ng) => {
+    const r = new FileReader();
+    r.onload = () => ok(String(r.result).split(',')[1]);
+    r.onerror = () => ng(r.error);
+    r.readAsDataURL(blob);
+  });
+  $('driveSave').addEventListener('click', async () => {
+    const st = $('driveStatus'), btn = $('driveSave');
+    if (!lastBlob) return;
+    const url = gasEl.value.trim() || getGas();
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec/.test(url)){
+      st.className = 'status ng'; st.textContent = '保存先URLが未設定です。下の「Drive保存の設定」に貼ってください。';
+      $('driveSet').open = true; gasEl.focus(); return;
+    }
+    try { localStorage.setItem(GAS_KEY, url); } catch(e){}
+    if (driveDone && !confirm('この画像はもう保存済みです。もう1枚、別の番号で保存しますか？')) return;
+    btn.disabled = true; st.className = 'status'; st.textContent = '保存しています…';
+    try {
+      const res = await fetch(url, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({name:lastNm, image: await toB64(lastBlob)})});
+      const j = await res.json();
+      if (!j.ok) throw new Error(j.error || '保存に失敗しました');
+      driveDone = true;
+      st.className = 'status ok';
+      st.textContent = `${j.created ? `「${j.folder}」フォルダを新しく作って、` : `「${j.folder}」フォルダに`}「${j.file}」で保存しました。`;
+      btn.textContent = '保存済み'; $('driveSet').open = false;
+    } catch(err){
+      st.className = 'status ng';
+      st.textContent = `保存できませんでした（${err && err.message || '通信エラー'}）。電波を確認して、もう一度押してください。`;
+    } finally { btn.disabled = false; }
   });
 
   noise = makeNoise();
