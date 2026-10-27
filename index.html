@@ -748,7 +748,7 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
   let lastNm = '', driveDone = false;
   // 保存先：Drive「新パネル202611」（1UgANDMDwZ897TsV2qgzfE7J7DyvKQ3M-）。
   // ブラウザから直接Driveには書けないので、そのフォルダに書き込むApps ScriptのURLを全端末共通で埋め込む
-  const GAS_URL = '';
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbzRNqaLTDqcjM-_pY8XOS4LsjDdvY78cwPPLdmamUySBw4mRFN-K81lTKTtFiaYC0q9bA/exec';
   if (!window.claude && GAS_URL){
     $('driveBox').hidden = false;
     $('save').className = 'secondary';
