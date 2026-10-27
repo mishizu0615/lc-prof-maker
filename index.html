@@ -149,11 +149,15 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
         <small>チェックすると右上に王冠の「イチオシ」バッジが付きます。</small>
       </div>
       <div class="field catchOnly" hidden>
-        <span class="lbl">お客様の口コミ（3行まで）</span>
-        <input id="catch1" type="text" value="笑顔にとにかく癒されました" maxlength="15" aria-label="口コミ1行目">
-        <input id="catch2" type="text" value="会話が楽しくてあっという間" maxlength="15" aria-label="口コミ2行目">
-        <input id="catch3" type="text" value="また絶対に会いに来ます" maxlength="15" aria-label="口コミ3行目">
-        <small>実際にいただいた口コミを、意味を変えずに入れてください（お店で作った文章はNG）。1行15文字まで。空欄の行は出ません。最初の文は見本です。</small>
+        <span class="lbl">3行コメント</span>
+        <input id="catch1" type="text" value="笑顔にとにかく癒されました" maxlength="15" aria-label="コメント1行目">
+        <input id="catch2" type="text" value="会話が楽しくてあっという間" maxlength="15" aria-label="コメント2行目">
+        <input id="catch3" type="text" value="また絶対に会いに来ます" maxlength="15" aria-label="コメント3行目">
+        <div class="chips">
+          <label class="chip"><input id="revHead" type="checkbox" checked><span>REVIEW｜ご来店のお客様より</span></label>
+          <label class="chip"><input id="revNote" type="checkbox" checked><span>※実際にいただいた口コミより抜粋</span></label>
+        </div>
+        <small>口コミとして載せるときは2つともチェック。実際にいただいた口コミを、意味を変えずに入れてください（お店で作った文章を口コミとして出すのはNG）。1行15文字まで。空欄の行は出ません。最初の文は見本です。</small>
       </div>
       <div class="field textOnly">
         <label for="occ">職業</label>
@@ -479,6 +483,8 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
         lines.forEach((t, i) => drawSpaced(t, K.left, K.base - (n-1-i)*step, ks*K.ls));
         shadow(null);
         const topBase = K.base - (n-1)*step;
+        if (!$('revHead').checked){ ctx.fillStyle = K.rule; ctx.fillRect(K.left + 2, topBase - ks - 22, 56, 3); }
+        else {
         // heading: REVIEW｜ご来店のお客様より
         const hb = topBase - ks - 26;
         ctx.font = 'italic 400 36px "Playfair Display", Georgia, serif'; ctx.fillStyle = '#FFFFFF'; shadow(['rgba(0,0,0,.4)',8,1]);
@@ -491,9 +497,10 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
         ctx.font = 'italic 400 96px "Playfair Display", Georgia, serif'; ctx.fillStyle = K.rule; ctx.globalAlpha = .9;
         ctx.fillText('\u201C', K.left - 52, topBase + 30);
         ctx.globalAlpha = 1;
+        }
         // source note
         ctx.font = '500 22px "Zen Kaku Gothic New", sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.88)'; shadow(['rgba(0,0,0,.35)',6,1]);
-        drawSpaced('※実際にいただいた口コミより抜粋', K.left, K.base + ks*0.5 + 34, 22*.04);
+        if ($('revNote').checked) drawSpaced('※実際にいただいた口コミより抜粋', K.left, K.base + ks*0.5 + 34, 22*.04);
         shadow(null);
       }
     }
@@ -589,6 +596,7 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
 
   // ---- inputs ----
   [occEl, nameEl, ageEl, $('catch1'), $('catch2'), $('catch3')].forEach(el => el.addEventListener('input', refresh));
+  ['revHead','revNote'].forEach(id => $(id).addEventListener('change', redraw));
   $('pickup').addEventListener('change', async () => { await document.fonts.load('700 23px "Shippori Mincho"', 'イチオシ').catch(()=>{}); redraw(); });
   ['tagLocal','tagNew'].forEach(id => $(id).addEventListener('change', async () => { await document.fonts.load('700 34px "Shippori Mincho"', '地元未経験').catch(()=>{}); redraw(); }));
 
