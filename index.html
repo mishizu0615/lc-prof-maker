@@ -125,8 +125,8 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
         <div class="frames list" role="radiogroup" aria-label="枠の種類">
           <button type="button" class="fr" data-frame="magazine" role="radio"><b>① 雑誌</b><span>ロゴ大きめ・明朝体</span></button>
           <button type="button" class="fr" data-frame="cheki" role="radio"><b>② チェキ</b><span>フチ付き・丸ゴシック体</span></button>
-          <button type="button" class="fr" data-frame="chekiPhoto" role="radio"><b>③ 枠だけ（チェキ）</b><span>キャッチ3行</span></button>
-          <button type="button" class="fr" data-frame="magazinePhoto" role="radio"><b>④ 枠だけ（雑誌）</b><span>キャッチ3行</span></button>
+          <button type="button" class="fr" data-frame="chekiPhoto" role="radio"><b>③ 枠だけ（チェキ）</b><span>口コミ3行</span></button>
+          <button type="button" class="fr" data-frame="magazinePhoto" role="radio"><b>④ 枠だけ（雑誌）</b><span>口コミ3行</span></button>
         </div>
       </div>
       <div class="field" id="chekiOpt" hidden>
@@ -149,11 +149,11 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
         <small>チェックすると右上に王冠の「イチオシ」バッジが付きます。</small>
       </div>
       <div class="field catchOnly" hidden>
-        <span class="lbl">キャッチ（3行まで）</span>
-        <input id="catch1" type="text" value="笑顔がとびきり" maxlength="15" aria-label="キャッチ1行目">
-        <input id="catch2" type="text" value="癒し系の現役女子大生" maxlength="15" aria-label="キャッチ2行目">
-        <input id="catch3" type="text" value="ゆるふわトークが得意" maxlength="15" aria-label="キャッチ3行目">
-        <small>1行15文字まで。長い行があると3行まとめて自動で小さくなります。空欄の行は出ません。</small>
+        <span class="lbl">お客様の口コミ（3行まで）</span>
+        <input id="catch1" type="text" value="笑顔にとにかく癒されました" maxlength="15" aria-label="口コミ1行目">
+        <input id="catch2" type="text" value="会話が楽しくてあっという間" maxlength="15" aria-label="口コミ2行目">
+        <input id="catch3" type="text" value="また絶対に会いに来ます" maxlength="15" aria-label="口コミ3行目">
+        <small>実際にいただいた口コミを、意味を変えずに入れてください（お店で作った文章はNG）。1行15文字まで。空欄の行は出ません。最初の文は見本です。</small>
       </div>
       <div class="field textOnly">
         <label for="occ">職業</label>
@@ -479,7 +479,22 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
         lines.forEach((t, i) => drawSpaced(t, K.left, K.base - (n-1-i)*step, ks*K.ls));
         shadow(null);
         const topBase = K.base - (n-1)*step;
-        ctx.fillStyle = K.rule; ctx.fillRect(K.left + 2, topBase - ks - 22, 56, 3);
+        // heading: REVIEW｜ご来店のお客様より
+        const hb = topBase - ks - 26;
+        ctx.font = 'italic 400 36px "Playfair Display", Georgia, serif'; ctx.fillStyle = '#FFFFFF'; shadow(['rgba(0,0,0,.4)',8,1]);
+        ctx.fillText('REVIEW', K.left, hb);
+        const rw = ctx.measureText('REVIEW').width;
+        ctx.fillStyle = K.rule; ctx.fillRect(K.left + rw + 16, hb - 26, 2, 30);
+        ctx.font = '600 24px "Shippori Mincho", serif'; ctx.fillStyle = '#FFFFFF';
+        drawSpaced('ご来店のお客様より', K.left + rw + 32, hb - 2, 24*.08);
+        // opening quote mark beside the first line
+        ctx.font = 'italic 400 96px "Playfair Display", Georgia, serif'; ctx.fillStyle = K.rule; ctx.globalAlpha = .9;
+        ctx.fillText('\u201C', K.left - 52, topBase + 30);
+        ctx.globalAlpha = 1;
+        // source note
+        ctx.font = '500 18px "Zen Kaku Gothic New", sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.85)'; shadow(['rgba(0,0,0,.35)',6,1]);
+        drawSpaced('※実際にいただいた口コミより抜粋', K.left, K.base + ks*0.5 + 30, 18*.04);
+        shadow(null);
       }
     }
     if (F.noText){ shadow(null); ctx.restore(); return; }
@@ -563,7 +578,10 @@ input:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid va
         document.fonts.load('500 34px "Zen Kaku Gothic New"', 'ここに写真が入ります'),
         document.fonts.load('900 104px "Zen Maru Gothic"', t),
         document.fonts.load('700 62px "Zen Maru Gothic"', t),
-        document.fonts.load('400 66px "Great Vibes"', 'Love Collection')
+        document.fonts.load('400 66px "Great Vibes"', 'Love Collection'),
+        document.fonts.load('600 24px "Shippori Mincho"', 'ご来店のお客様より'),
+        document.fonts.load('500 18px "Zen Kaku Gothic New"', '※実際にいただいた口コミより抜粋'),
+        document.fonts.load('italic 400 96px "Playfair Display"', '\u201C')
       ]);
     } catch(e){}
   }
